@@ -1154,7 +1154,14 @@ protected:
           predictors["var_library_sangle"].push_back(f.getMetaValue("var_library_sangle"));
           predictors["var_xcorr_shape"].push_back(f.getMetaValue("var_xcorr_shape"));
           predictors["total_xic"].push_back(f.getMetaValue("total_xic"));
-          predictors["var_elution_model_fit_score"].push_back(f.getMetaValue("var_elution_model_fit_score"));
+
+          // TODO: var_elution_model_fit_score may be missing!
+          if (!f.getMetaValue("var_elution_model_fit_score").isEmpty())
+          {
+            predictors["var_elution_model_fit_score"].push_back(
+              f.getMetaValue("var_elution_model_fit_score")
+            );
+          }
 
           bool is_offset = f.metaValueExists("OffsetPeptide");
           bool has_id = !f.getPeptideIdentifications().empty(); // offset peptides also have no id
