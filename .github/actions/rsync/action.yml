@@ -1,0 +1,47 @@
+name: "Prepare for rsync"
+description: "Prepare the environment for running rsync"
+
+inputs:
+  key:
+    description: "The text of the SSH key, or empty if there is no ssh key available"
+    required: false
+  port:
+    description: "The port number that SSH is running on"
+    required: false
+
+outputs:
+  have_key:
+    description: "Set to 'true' if a SSH key is present and rsync can be called"
+    value: ${{ steps.ssh-key.outputs.have_key }}
+  ssh:
+    description: "What to pass to the `-e` option for SSH"
+    value: ${{ steps.ssh-key.outputs.ssh }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Prepare for rsync"
+      id: ssh-key
+      shell: bash
+      env:
+        SSH_KEY_TEXT: ${{ inputs.key }}
+        SSH_PORT:
+      run: |
+        output=$HOME/.ssh/private.key
+
+        if [[ -n "$SSH_KEY_TEXT" ]]; then
+          mkdir -p "$(dirname "$output")"
+          cat <<<"$SSH_KEY_TEXT" >"$output"
+          chmod 0600 "$output"
+
+          {
+            echo "have_key=true"
+            echo "ssh=ssh -i $output -p $SSH_PORT -o StrictHostKeyChecking=accept-new"
+          } >>"$GITHUB_OUTPUT"
+        else
+          {
+            echo "have_key=false"
+            echo "ssh=echo"
+          } >>"$GITHUB_OUTPUT"
+        fi
